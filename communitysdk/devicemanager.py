@@ -11,6 +11,7 @@ productIds = {
 	'24597': 'rpk'
 }
 
+
 def list_connected_devices():
 	com_list = list_ports.comports()
 	connected_devices = []
@@ -28,3 +29,13 @@ def list_connected_devices():
 				rpk.connect()
 				connected_devices.append(rpk)
 	return connected_devices
+
+
+class DeviceManager:
+	@classmethod
+	def list_connected_devices(cls):
+		return list_connected_devices()
+
+	@classmethod
+	def list_motion_sensors(cls):
+		
