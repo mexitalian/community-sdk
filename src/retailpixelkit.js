@@ -2,6 +2,8 @@ const SerialPort = require('serialport');
 const WebSocket = require('ws');
 const createInterface = require('readline').createInterface;
 const RPCClient = require('./rpcclient');
+const { COLUMNS, ROWS, PIXEL_COUNT, OFF, BLANK_SCREEN } = require('./const');
+
 
 class RetailPixelKit extends RPCClient {
     /**
@@ -157,6 +159,32 @@ class RetailPixelKit extends RPCClient {
         let encodedFrame = this.hexToBase64Colors(frame);
         return this.rpcRequest('lightboard:on', [{ map: encodedFrame }]);
     }
+	coordToIndex(x, y) {
+        /**
+         * Convert an x, y coordinate to an index in a frame list
+         * @param {int} x
+         * @param {int} y
+         * @return {int}
+         */
+        return (y * COLUMNS + (x - COLUMNS)) - 1
+    }
+    pixelsToFrame(pixels) {
+        /**
+         * Create a frame list of hex colors
+         * @param {array} pixels (x, y, color)
+         * @return {array}
+         */
+        const frame = JSON.parse(JSON.stringify(BLANK_SCREEN)); // todo: improve cloning performance
+        pixels.forEach(([x, y, color]) => {
+            const index = this.coordToIndex(x, y)
+			frame[index] = color
+        })
+		return frame
+    }
+    streamPixels(pixels) {
+		const frame = this.pixelsToFrame(pixels)
+		return this.streamFrame(frame)
+    }
     getBatteryStatus() {
         return this.rpcRequest('battery-status', []);
     }
@@ -170,5 +198,6 @@ class RetailPixelKit extends RPCClient {
         return this.rpcRequest('wifi-connect', [ssid, password]);
     }
 }
+
 
 module.exports = RetailPixelKit
